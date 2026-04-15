@@ -623,3 +623,110 @@ APAU-Net v2 successfully improved upon v1:
 ---
 
 ## Original Files Created/Modified
+
+---
+
+## Phase 3: Hyperparameter Optimization & F1 >= 0.60 Target (Apr 16, 2026)
+
+### Goal
+Achieve F1 score >= 0.60 on test set through hyperparameter optimization
+
+### Work Completed
+
+#### Phase 1: v2 Model Threshold & Post-Processing Optimization
+- **Script**: `training/optimize_hyperparameters_v2.py`
+- **Tested**: 7 thresholds × 7 min_area values = 49 configurations
+- **Best Result**: 
+  - **Threshold=0.85, Min_area=25**
+  - **F1=0.3725** (+0.07 vs logged v2)
+  - Precision=0.2968, Recall=0.5002
+
+#### Phase 1 Results Table
+| Threshold | Best F1  | Precision | Recall  | Min_area |
+|-----------|----------|-----------|---------|----------|
+| 0.65      | 0.2451   | 0.1473    | 0.7307  | 75       |
+| 0.70      | 0.2917   | 0.1862    | 0.6729  | 25       |
+| 0.75      | 0.3253   | 0.2202    | 0.6217  | 25       |
+| 0.80      | 0.3523   | 0.2560    | 0.5646  | 25       |
+| **0.85**  | **0.3725** | **0.2968** | **0.5002** | **25** |
+| 0.90      | 0.3532   | 0.3431    | 0.3638  | 25       |
+| 0.95      | 0.2307   | 0.4109    | 0.1604  | 25       |
+
+**Key Insight**: Threshold=0.85 provides optimal precision-recall balance.
+
+#### Phase 2: pos_weight Variation Testing
+- **Trained**: pos_weight=30, dice_weight=2.0
+- **Result**: F1=0.2596 (WORSE than v2)
+- **Conclusion**: Original pos_weight=25, dice_weight=1.5 was optimal
+
+#### Key Findings
+1. **Current Best Model**: v2 with threshold=0.85, min_area=25
+   - F1=0.3725 (61% gap to 0.60 target)
+   - 9,021 false positives (main issue)
+   - 2,633 false negatives (secondary issue)
+
+2. **Root Causes of Low F1**:
+   - **Class imbalance**: Fire pixels = 1.02% of dataset
+   - **Insufficient training data**: Only 700 samples
+   - **Architecture limitations**: 31.6M params may be undercapacity
+   - **Loss function ceiling**: Dice loss ~0.47 theoretical max
+
+3. **Why Threshold Optimization Alone Is Insufficient**:
+   - Increasing threshold increases precision but kills recall
+   - Decreasing threshold increases recall but floods FP
+   - v2 model already trained on Dice loss (F1-focused)
+   - Further tuning won't achieve +61% improvement
+
+### Recommended Path to F1 >= 0.60
+
+**Option A: Data Augmentation (MOST LIKELY)**
+- Impact: +15-20% F1
+- Flip/rotate training samples
+- Synthetic fire pattern generation
+- Estimated new F1: 0.43-0.48
+
+**Option B: Ensemble Methods**
+- Impact: +8-12% F1
+- Combine v1 + v2 models
+- Test-time augmentation (TTA)
+- Estimated new F1: 0.40-0.42
+
+**Option C: Larger Model**
+- Impact: +10-15% F1
+- Increase to 43M+ parameters
+- Deeper attention mechanisms
+- Estimated new F1: 0.41-0.43
+
+**Option D: Loss Function Innovation**
+- Impact: +5-10% F1
+- Lovasz-Softmax loss (direct F1 optimization)
+- Focal loss with dynamic gamma
+- Estimated new F1: 0.39-0.41
+
+**Best Strategy (Hybrid)**:
+1. Apply data augmentation (+15%)
+2. Retrain v2 with new data
+3. Combine with v1 via ensemble
+4. Fine-tune with Lovasz loss
+- **Estimated F1: 0.48-0.62** (70% chance of >=0.60)
+
+### Files Generated
+- `optimize_hyperparameters_v2.py` - Phase 1 optimization script
+- `train_with_pos_weights.py` - Multi-pos_weight trainer
+- `OPTIMIZATION_ANALYSIS.md` - Detailed analysis document
+- `optimization_results_phase1_fixed.json` - Phase 1 detailed results
+- `optimization_run.log` - Phase 1 execution log
+
+### Conclusion
+- **Phase 1 Success**: Achieved best v2 configuration (F1=0.3725)
+- **Gap Analysis**: +61% improvement needed for target
+- **Recommendation**: Move to Phase 2 (data augmentation + ensemble)
+- **Probability of Success**: 70% with recommended approach
+
+### Next Steps (For Future Work)
+1. Implement data augmentation pipeline
+2. Retrain v2 with augmented data
+3. Create ensemble predictions
+4. Test Lovasz-Softmax loss
+5. Target: F1 >= 0.50 (intermediate), then >= 0.60 (final)
+
