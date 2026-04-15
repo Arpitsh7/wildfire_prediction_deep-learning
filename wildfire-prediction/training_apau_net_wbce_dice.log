@@ -1,0 +1,95 @@
+
+================================================================================
+              APAU-NET TRAINING v2: WBCEDiceLoss + POST-PROCESSING
+                         2026-04-16 01:57:35
+================================================================================
+Device: cuda
+Loss: WBCEDiceLoss (pos_weight=25, WBCE:Dice = 1:1.5)
+Epochs: 35 (Early stopping patience: 5-7)
+Thresholds: [0.7, 0.8, 0.85, 0.9, 0.95]
+Post-processing: Remove small blobs (min_area=100 pixels)
+================================================================================
+
+Train batches: 22, Val batches: 5, Test batches: 5
+
+Initializing APAU-Net model...
+Total Parameters: 31,619,231
+
+Loss: WBCEDiceLoss
+  - pos_weight: 25
+  - WBCE weight: 1.0
+  - Dice weight: 1.5
+Optimizer: Adam (lr=1e-4)
+Scheduler: StepLR (decay=0.5 every 5 epochs)
+Batch Size: 32
+Max Epochs: 35, Early Stopping Patience: 5-7
+
+Epoch    Loss         Val F1     Best F1    Best Thresh  LR          
+----------------------------------------------------------------------
+1        1.859400     0.000000   0.000000   0.5000       1.00e-04    
+2        1.575684     0.000000   0.000000   0.5000       1.00e-04    
+3        1.266669     0.360337   0.360337   0.7000       1.00e-04    
+4        1.038963     0.336080   0.360337   0.7000       1.00e-04    
+5        0.457881     0.385555   0.385555   0.9500       1.00e-04    
+6        0.174331     0.434966   0.434966   0.9000       5.00e-05    
+7        -0.305642    0.424535   0.434966   0.9000       5.00e-05    
+8        -0.661864    0.431391   0.434966   0.8500       5.00e-05    
+9        -1.191546    0.436776   0.436776   0.9000       5.00e-05    
+10       -0.758039    0.433328   0.436776   0.8500       5.00e-05    
+11       -1.635154    0.455805   0.455805   0.9000       2.50e-05    
+12       -1.458529    0.469277   0.469277   0.9000       2.50e-05    
+13       -1.542818    0.443913   0.469277   0.9000       2.50e-05    
+14       -1.611386    0.439634   0.469277   0.8500       2.50e-05    
+15       -1.617403    0.437174   0.469277   0.9000       2.50e-05    
+16       -1.837261    0.430910   0.469277   0.9000       1.25e-05    
+17       -2.220596    0.438194   0.469277   0.9000       1.25e-05    
+18       -2.533326    0.435398   0.469277   0.9000       1.25e-05    
+
+Early stopping at epoch 18 (no improvement for 6 epochs)
+----------------------------------------------------------------------
+
+Loaded best model (F1: 0.469277)
+
+======================================================================
+THRESHOLD SWEEP ON VALIDATION SET (WITH POST-PROCESSING)
+======================================================================
+Threshold    Precision    Recall       F1           IoU         
+----------------------------------------------------------------------
+0.70         0.194356     0.693770     0.303647     0.179000    
+0.80         0.272016     0.623921     0.378859     0.233699    
+0.85         0.320494     0.566613     0.409412     0.257397    
+0.90         0.409805     0.464401     0.435398     0.278281    
+0.95         0.377981     0.100458     0.158730     0.086207    
+----------------------------------------------------------------------
+
+Optimal Threshold: 0.90 (F1: 0.435398)
+
+======================================================================
+TEST SET EVALUATION (WITH POST-PROCESSING)
+======================================================================
+
+Threshold: 0.90
+Min Area (post-processing): 100 pixels
+True Positives:  1770
+False Positives: 3645
+False Negatives: 4516
+Precision:       0.326870
+Recall:          0.281578
+F1 Score:        0.302538
+IoU:             0.178230
+Dice:            0.302538
+
+======================================================================
+COMPARISON WITH PREVIOUS VERSIONS
+======================================================================
+Level 1 (BCEWithLogitsLoss):         F1 = 0.2331
+APAU-Net v1 (BCEWithLogitsLoss):    F1 = 0.3001 (+28.75% vs Level 1)
+APAU-Net v2 (WBCEDiceLoss):         F1 = 0.3025 (+0.81% vs v1, +29.79% vs Level 1)
+Status: [PASS] v2 OUTPERFORMED v1
+
+Model saved to: C:\Users\Arpit\.openclaw\workspace\wildfire\wildfire-prediction\checkpoints\apau_net_wbce_dice.pth
+Results saved to: C:\Users\Arpit\.openclaw\workspace\wildfire\wildfire-prediction\results\apau_net_wbce_dice_metrics.json
+
+======================================================================
+TRAINING COMPLETE!
+======================================================================
