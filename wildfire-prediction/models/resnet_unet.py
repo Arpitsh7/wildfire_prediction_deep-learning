@@ -5,13 +5,15 @@ import torch.nn.functional as F
 
 
 class DoubleConv(nn.Module):
-    def __init__(self, in_channels, out_channels):
+    def __init__(self, in_channels, out_channels, dilation=1):
         super().__init__()
+        # Calculate padding to maintain spatial dimensions with dilation
+        padding = dilation
         self.conv = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, 3, padding=1),
+            nn.Conv2d(in_channels, out_channels, 3, padding=padding, dilation=dilation),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True),
-            nn.Conv2d(out_channels, out_channels, 3, padding=1),
+            nn.Conv2d(out_channels, out_channels, 3, padding=padding, dilation=dilation),
             nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True)
         )
@@ -53,10 +55,10 @@ class ResNetEncoder(nn.Module):
 
 
 class DecoderBlock(nn.Module):
-    def __init__(self, in_channels, skip_channels, out_channels):
+    def __init__(self, in_channels, skip_channels, out_channels, dilation=1):
         super().__init__()
         self.up = nn.ConvTranspose2d(in_channels, in_channels, 2, stride=2)
-        self.conv = DoubleConv(in_channels + skip_channels, out_channels)
+        self.conv = DoubleConv(in_channels + skip_channels, out_channels, dilation=dilation)
     
     def forward(self, x, skip):
         x = self.up(x)
@@ -72,14 +74,14 @@ class ResNetUNet(nn.Module):
         super().__init__()
         self.encoder = ResNetEncoder(in_channels)
         
-        # Decoder with skip connections
+        # Decoder with skip connections and Dilated Convolutions
         # From bottleneck (after encoder): we have e4 at 512 channels
-        self.dec4 = DecoderBlock(512, 256, 256)  # e4 -> e3: 512 up + 256 skip = 768 -> 256 out
-        self.dec3 = DecoderBlock(256, 128, 128)  # e3 -> e2: 256 up + 128 skip = 384 -> 128 out
-        self.dec2 = DecoderBlock(128, 64, 64)    # e2 -> e1: 128 up + 64 skip = 192 -> 64 out
+        self.dec4 = DecoderBlock(512, 256, 256, dilation=1)  # e4 -> e3: 512 up + 256 skip = 768 -> 256 out
+        self.dec3 = DecoderBlock(256, 128, 128, dilation=2)  # e3 -> e2: 256 up + 128 skip = 384 -> 128 out
+        self.dec2 = DecoderBlock(128, 64, 64, dilation=4)    # e2 -> e1: 128 up + 64 skip = 192 -> 64 out
         self.dec1 = nn.Sequential(
             nn.ConvTranspose2d(64, 64, 2, stride=2),  # 64 -> 64, 16x16 -> 32x32
-            DoubleConv(64, 32),                       # 64 -> 32
+            DoubleConv(64, 32, dilation=8),                       # 64 -> 32
             nn.Conv2d(32, out_channels, 1)            # final 1x1 conv to get 1 channel
         )
         self.upsample = nn.Upsample(scale_factor=2, mode='bilinear', align_corners=False)  # 32x32 -> 64x64
