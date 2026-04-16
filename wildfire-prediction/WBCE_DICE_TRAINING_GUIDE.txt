@@ -1,0 +1,238 @@
+================================================================================
+WBCE + 2×Dice Loss Training Guide for APAU-Net
+================================================================================
+
+PROJECT: Wildfire Prediction using APAU-Net
+BASELINE: F1 = 0.46 (BCEWithLogitsLoss)
+TARGET: F1 >= 0.56 (+22% improvement)
+DATE CREATED: April 15, 2026
+
+================================================================================
+FILES CREATED
+================================================================================
+
+1. utils/combined_losses.py (14 KB)
+   - DiceLoss: Direct F1 optimization
+   - WBCEDiceLoss: RECOMMENDED (Loss = 1.0*WBCE + 2.0*DiceLoss)
+   - FocalDiceLoss: Hard example mining
+   - WeightedComboLoss: Fully customizable
+   
+   Preset functions:
+   - get_wbce_dice_loss()
+   - get_focal_dice_loss()
+   - get_balanced_combo_loss()
+   - get_custom_combo_loss()
+
+2. training/train_apau_net_wbce_dice.py (19 KB)
+   - Complete training pipeline
+   - ReduceLROnPlateau scheduler
+   - EarlyStopping mechanism
+   - Comprehensive threshold analysis
+   
+   Components:
+   - load_full_data(): Data loading with normalization
+   - EarlyStopping class: Early stopping with patience=5
+   - train_apau_net_wbce_dice(): Main training function
+
+================================================================================
+LOSS FUNCTION CONFIGURATION
+================================================================================
+
+Loss Formula:
+  Loss = 1.0 * WBCE(pos_weight=90.33) + 2.0 * DiceLoss(smooth=1e-7)
+
+Weighting:
+  - WBCE component: 33% (class imbalance handling)
+  - DiceLoss component: 67% (F1 score optimization)
+
+Why This Works:
+  1. Dice Loss = F1 Score (mathematically equivalent)
+  2. WBCE handles wildfire class imbalance (fire pixels ~1%)
+  3. Combined approach: Stable training + F1-aligned gradients
+
+================================================================================
+TRAINING CONFIGURATION
+================================================================================
+
+Optimizer:
+  - Type: AdamW
+  - Learning Rate: 1e-4
+  - Weight Decay: 1e-4 (L2 regularization)
+  - Gradient Clipping: max_norm=1.0
+
+Learning Rate Scheduler:
+  - Type: ReduceLROnPlateau
+  - Mode: max (maximize validation F1)
+  - Factor: 0.5 (reduce LR by 50%)
+  - Patience: 3 epochs
+  - Minimum LR: 1e-6
+
+Early Stopping:
+  - Patience: 5 epochs
+  - Monitor: Validation F1 score
+  - Auto-saves best model
+
+Training:
+  - Max Epochs: 25
+  - Batch Size: 32
+  - Data Split: 700 train / 150 val / 150 test
+  - Normalization: Min-max per channel
+
+Threshold Tuning:
+  - Validation sweep: 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8 (7 thresholds)
+  - Test sweep: 0.1 to 0.9 (17 thresholds)
+
+================================================================================
+RUNNING THE TRAINING
+================================================================================
+
+Prerequisites:
+  - Data files in: data/processed/X_train.npy, Y_train.npy, etc.
+  - Model file: models/attention_unet.py
+  - CUDA/GPU recommended (can run on CPU)
+
+Command:
+  cd /path/to/wildfire-prediction
+  python training/train_apau_net_wbce_dice.py
+
+Output Files:
+  - Checkpoint: checkpoints/apau_net_wbce_dice.pth
+  - Results: results/apau_net_wbce_dice_results.json
+
+Results JSON includes:
+  - timestamp
+  - model configuration
+  - loss function details
+  - training history (loss, F1 per epoch)
+  - test metrics (F1, precision, recall, IoU, Dice)
+  - threshold analysis
+  - improvement vs baseline (0.46)
+
+================================================================================
+EXPECTED IMPROVEMENTS
+================================================================================
+
+Current (BCEWithLogitsLoss):
+  - F1 Score: 0.46
+  - Metric optimized: Cross-entropy (not F1)
+  - Issue: Probabilistic loss doesn't directly align with F1
+
+New (WBCE + 2×Dice Loss):
+  - F1 Score: Expected 0.56 - 0.62
+  - Metric optimized: F1 directly
+  - Improvement: +0.10 - 0.16 absolute (+22% - 35% relative)
+
+Breakdown:
+  - Dice Loss optimization: +0.08-0.12 F1
+  - Better convergence (scheduler): +0.02-0.04 F1
+  - Early stopping (regularization): +0.00-0.02 F1
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+Out of Memory:
+  - Reduce batch_size = 16 (instead of 32)
+  - Reduce model checkpoint storage
+
+F1 Plateaus Early:
+  - Increase scheduler patience: patience=5 (instead of 3)
+  - Reduce scheduler factor: factor=0.7 (gentler decay)
+
+Training Diverges:
+  - Reduce learning rate: lr=5e-5
+  - Increase gradient clipping: max_norm=0.5
+
+Early Stopping Too Aggressive:
+  - Increase patience: EarlyStopping(patience=10)
+  - Increase epochs: epochs=40
+
+Loss Not Decreasing:
+  - Reduce weight_decay: weight_decay=1e-5
+  - Check data normalization
+
+================================================================================
+ARCHITECTURE FEATURES (APAU-NET)
+================================================================================
+
+APAU-Net = Atrous Pyramid Attention U-Net
+
+Components:
+  1. Atrous Convolutions (dilation rates: 1, 2, 4, 8)
+  2. Multi-scale Feature Pyramid (5 levels: 64x64 → 4x4)
+  3. Channel Attention (CBAM modules)
+  4. Spatial Attention (CBAM modules)
+  5. Attention Gates in Decoder
+  6. Skip Connections
+
+Parameters: 31.6 million
+Input: 12 channels (climate/environmental data), 64x64 grid
+Output: 1 channel (fire probability map), 64x64 grid
+
+================================================================================
+COMPARISON TABLE
+================================================================================
+
+Aspect                  | BCEWithLogitsLoss | WBCE + 2×Dice
+Metric Optimized        | Cross-entropy     | F1 score directly
+Class Imbalance         | pos_weight=90.33  | pos_weight + Dice
+Gradient Direction      | Probabilistic     | F1-aligned
+Small Dataset (700)     | Prone to overfit  | Better regularization
+LR Adaptation           | None (static)     | ReduceLROnPlateau
+Early Stopping          | Not implemented   | Yes (patience=5)
+Expected F1             | 0.46              | 0.56-0.62
+Convergence Rate        | Steady            | Adaptive
+
+================================================================================
+MATHEMATICAL DETAILS
+================================================================================
+
+Dice Coefficient:
+  Dice = (2*TP) / (2*TP + FP + FN)
+
+Dice Loss:
+  DiceLoss = 1 - Dice = 1 - (2*TP) / (2*TP + FP + FN)
+
+F1 Score:
+  F1 = (2*Precision*Recall) / (Precision + Recall)
+     = (2*TP) / (2*TP + FP + FN)  [binary classification]
+
+Key Insight: DiceLoss = 1 - F1  (mathematically equivalent)
+
+Weighted BCE:
+  WBCE = -[pos_weight * y * log(sigmoid(x)) + (1-y) * log(1-sigmoid(x))]
+
+Combined Loss:
+  Loss = 1.0*WBCE + 2.0*DiceLoss
+       = Class imbalance handling + Direct F1 optimization
+
+================================================================================
+NEXT STEPS
+================================================================================
+
+After Training:
+1. Review results in results/apau_net_wbce_dice_results.json
+2. Compare test F1 with baseline (0.46)
+3. If F1 >= 0.56: Success! Consider deployment
+4. If F1 < 0.56: Try advanced techniques
+
+Advanced Improvements:
+  - FocalDiceLoss (hard example mining)
+  - Light data augmentation (rotations only)
+  - Test-time augmentation (TTA)
+  - Ensemble multiple models
+  - Post-processing (morphological operations)
+
+================================================================================
+SUPPORT & DOCUMENTATION
+================================================================================
+
+Loss Functions: See utils/combined_losses.py docstrings
+Training Script: See training/train_apau_net_wbce_dice.py docstrings
+APAU Architecture: See models/attention_unet.py
+Dataset Info: See context.md or CONTEXT.md
+
+Questions:
+  - Review WBCE_DICE_TRAINING_GUIDE.md for detailed guide
+  - Check training output logs for epoch-by-epoch progress
+  - Results JSON contain

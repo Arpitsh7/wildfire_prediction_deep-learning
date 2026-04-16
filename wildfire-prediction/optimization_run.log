@@ -1,0 +1,5 @@
+  File "C:\Users\Arpit\.openclaw\workspace\wildfire\wildfire-prediction\training\optimize_hyperparameters.py", line 224
+    os.path.dirname(o
+                   ^
+SyntaxError: '(' was never closed
+C:\Python312\python.exe: can't open file 'C:\\Users\\Arpit\\.openclaw\\workspace\\wildfire\\wildfire-prediction\\training\\optimize_hyperparameters.py': [Errno 2] No such file or directory
