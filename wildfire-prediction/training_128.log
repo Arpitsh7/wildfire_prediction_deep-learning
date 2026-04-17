@@ -1,0 +1,8 @@
+Device: cuda
+Image size: 128, Batch size: 2
+Total: 20097
+Channels: 22, Train batches: 7000
+Params: 31,624,991
+
+Epoch  Loss     Val F1   Best
+----------------------------------------

@@ -1,0 +1,11 @@
+Device: cuda
+Threshold: 0.85, Min Area: 25
+Total samples: 20097
+Train: 220, Val: 48 batches
+Input channels: 22
+Starting fresh with 22 input channels
+Parameters: 31,624,991
+
+Epoch  Loss       Val F1     Best F1
+--------------------------------------------------
+1      2.4103     0.2414     0.2414     *

@@ -10,3 +10,4 @@ checkpoints/
 results/
 *.egg-info/
 .pytest_cache/
+wildfire-prediction/data/raw/

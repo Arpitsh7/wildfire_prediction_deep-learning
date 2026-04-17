@@ -1,0 +1,14 @@
+Device: cuda
+Total: 20097
+Channels: 22, Train batches: 110
+Params: 31,624,991
+
+Epoch  Loss     Val F1   Best
+----------------------------------------
+Device: cuda
+Total: 20097
+Channels: 22, Train batches: 438
+Params: 31,624,991
+
+Epoch  Loss     Val F1   Best
+----------------------------------------

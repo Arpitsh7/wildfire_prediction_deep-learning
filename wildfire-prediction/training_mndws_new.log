@@ -1,0 +1,32 @@
+
+================================================================================
+               APAU-NET TRAINING ON MNDWS DATASET
+                          2026-04-16 18:57:40
+================================================================================
+Device: cuda
+Loss: WBCEDiceLoss (pos_weight=25, WBCE:Dice = 1:1.5)
+Epochs: 35 with early stopping (patience=5-7)
+Threshold: 0.85 (fixed)
+Post-processing: Remove small blobs (min_area=25 pixels)
+================================================================================
+
+Train batches: 440, Val batches: 95, Test batches: 95
+Input channels: 22
+
+Initializing APAU-Net model...
+Total Parameters: 31,624,991
+
+Loss: WBCEDiceLoss
+  - pos_weight: 25
+  - BCE weight: 1.0
+  - Dice weight: 1.5
+Optimizer: Adam (lr=1e-4)
+Scheduler: StepLR (decay=0.5 every 5 epochs)
+Threshold: 0.85
+Min Area: 25
+
+Epoch    Loss         Val F1     Best F1    LR          
+------------------------------------------------------------
+1        2.331028     0.233228   0.233228   1.00e-04    
+2        2.063247     0.280960   0.280960   1.00e-04    
+3        1.865288     0.348156   0.348156   1.00e-04    

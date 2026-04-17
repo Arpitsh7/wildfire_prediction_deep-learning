@@ -1,0 +1,89 @@
+
+================================================================================
+         NDWS FILTERED TRAINING: Fire Patches Only + AttentionUNet
+                    2026-04-16 20:27:30
+================================================================================
+Device: cuda
+Dataset: NDWS filtered (fire patches only)
+Loss: WBCEDiceLoss (pos_weight=25, dice_weight=1.5)
+Epochs: 35 with early stopping (patience=6)
+Threshold: 0.85
+Post-processing: Remove small blobs (min_area=25)
+================================================================================
+
+
+Loading NDWS filtered dataset...
+Total samples: 890
+Train: 623, Val: 133, Test: 134
+Batch size: 32
+Train batches: 20, Val batches: 5, Test batches: 5
+Input channels: 12
+
+Initializing AttentionUNet model...
+Total Parameters: 31,619,231
+
+Loss: WBCEDiceLoss
+  - pos_weight: 25
+  - BCE weight: 1.0
+  - Dice weight: 1.5
+Optimizer: Adam (lr=1e-4)
+Scheduler: StepLR (decay=0.5 every 5 epochs)
+Threshold: 0.85
+Min Area: 25
+
+Epoch    Loss         Val F1     Best F1    LR          
+------------------------------------------------------------
+1        2.294264     0.000000   0.000000   1.00e-04    
+2        2.242740     0.000000   0.000000   1.00e-04    
+3        2.178959     0.000000   0.000000   1.00e-04    
+4        2.099198     0.000000   0.000000   1.00e-04    
+5        2.037468     0.373922   0.373922   1.00e-04     *
+6        1.989653     0.412640   0.412640   5.00e-05     *
+7        1.963483     0.416221   0.416221   5.00e-05     *
+8        1.931159     0.444584   0.444584   5.00e-05     *
+9        1.904519     0.427623   0.444584   5.00e-05    
+10       1.884705     0.458552   0.458552   5.00e-05     *
+11       1.862345     0.470676   0.470676   2.50e-05     *
+12       1.850046     0.475155   0.475155   2.50e-05     *
+13       1.836714     0.480775   0.480775   2.50e-05     *
+14       1.826733     0.473460   0.480775   2.50e-05    
+15       1.815906     0.483201   0.483201   2.50e-05     *
+16       1.808054     0.486788   0.486788   1.25e-05     *
+17       1.808314     0.486210   0.486788   1.25e-05    
+18       1.803396     0.483602   0.486788   1.25e-05    
+19       1.798679     0.492907   0.492907   1.25e-05     *
+20       1.786775     0.493935   0.493935   1.25e-05     *
+21       1.782417     0.493061   0.493935   6.25e-06    
+22       1.780338     0.494034   0.494034   6.25e-06     *
+23       1.777892     0.488208   0.494034   6.25e-06    
+24       1.777476     0.486881   0.494034   6.25e-06    
+25       1.773663     0.493036   0.494034   6.25e-06    
+26       1.770222     0.490769   0.494034   3.13e-06    
+27       1.770978     0.493426   0.494034   3.13e-06    
+28       1.768688     0.485617   0.494034   3.13e-06    
+
+Early stopping at epoch 28
+------------------------------------------------------------
+
+Loaded best model (F1: 0.494034)
+
+============================================================
+TEST SET EVALUATION
+============================================================
+
+Threshold: 0.85
+Min Area: 25
+True Positives:  4914
+False Positives: 4943
+False Negatives: 4389
+Precision:       0.498529
+Recall:          0.528217
+F1 Score:        0.512944
+IoU:             0.344939
+
+Model saved to: C:\Users\Arpit\.openclaw\workspace\wildfire\wildfire-prediction\checkpoints\ndws_filtered_apau_net.pth
+Results saved to: C:\Users\Arpit\.openclaw\workspace\wildfire\wildfire-prediction\results\ndws_filtered_training_results.json
+
+============================================================
+TRAINING COMPLETE!
+============================================================

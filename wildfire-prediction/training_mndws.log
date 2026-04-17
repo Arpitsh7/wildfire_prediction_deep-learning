@@ -1,0 +1,34 @@
+
+================================================================================
+              MNDWS TRAINING: WBCEDiceLoss + POST-PROCESSING
+                         2026-04-16 20:24:23
+================================================================================
+Device: cuda
+Loss: WBCEDiceLoss (pos_weight=25, WBCE:Dice = 1:1.5)
+Epochs: 35 with early stopping (patience=5-7)
+Threshold: 0.85 (fixed)
+Post-processing: Remove small blobs (min_area=25 pixels)
+================================================================================
+
+
+Loading MNDWS dataset...
+Total samples: 20097
+Train: 14067, Val: 3014, Test: 3016
+Batch size: 32
+Train batches: 440, Val batches: 95, Test batches: 95
+Input channels: 22
+
+Initializing AttentionUNet model...
+Total Parameters: 31,624,991
+
+Loss: WBCEDiceLoss
+  - pos_weight: 25
+  - BCE weight: 1.0
+  - Dice weight: 1.5
+Optimizer: Adam (lr=1e-4)
+Scheduler: StepLR (decay=0.5 every 5 epochs)
+Threshold: 0.85
+Min Area: 25
+
+Epoch    Loss         Val F1     Best F1    LR          
+------------------------------------------------------------
